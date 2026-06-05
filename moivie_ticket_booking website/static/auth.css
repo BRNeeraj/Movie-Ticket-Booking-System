@@ -1,0 +1,343 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-family: 'Poppins', sans-serif;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(0, 0, 0, 0.96) 0%,
+            rgba(70, 0, 0, 0.72) 45%,
+            rgba(0, 0, 0, 0.94) 100%
+        ),
+        url("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1974&auto=format&fit=crop");
+
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* cinematic red spotlight */
+body::before {
+    content: "";
+    position: absolute;
+    width: 760px;
+    height: 760px;
+    top: -250px;
+    left: -230px;
+
+    background: radial-gradient(
+        circle,
+        rgba(255, 40, 40, 0.45),
+        rgba(255, 40, 40, 0.13) 38%,
+        transparent 70%
+    );
+
+    filter: blur(45px);
+    animation: glowMove 8s ease-in-out infinite alternate;
+}
+
+/* cinema grid + vignette */
+body::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.78) 78%),
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+
+    background-size: auto, 44px 44px, 44px 44px;
+    pointer-events: none;
+}
+
+@keyframes glowMove {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(160px, 110px) scale(1.2);
+    }
+}
+
+/* LOGIN BOX */
+
+.auth-container {
+    width: min(92%, 450px);
+    padding: 46px 40px 38px;
+
+    border-radius: 26px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28, 28, 28, 0.86),
+            rgba(8, 8, 8, 0.76)
+        );
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    box-shadow:
+        0 35px 90px rgba(0, 0, 0, 0.78),
+        0 0 55px rgba(255, 49, 49, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+    text-align: center;
+    position: relative;
+    z-index: 5;
+
+    animation: floatBox 4.5s ease-in-out infinite;
+    overflow: hidden;
+}
+
+/* top shine */
+.auth-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0.18),
+        transparent 32%,
+        transparent 70%,
+        rgba(255, 49, 49, 0.14)
+    );
+
+    pointer-events: none;
+}
+
+/* ticket strip */
+.auth-container::after {
+    content: "BOOK YOUR SHOW NOW";
+    position: absolute;
+    top: 18px;
+    right: -48px;
+
+    width: 190px;
+    padding: 8px 0;
+
+    background: linear-gradient(135deg, #ff3131, #ffb703);
+    color: #111;
+
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+
+    transform: rotate(35deg);
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes floatBox {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* TITLE */
+
+.auth-container h1 {
+    color: #ffffff;
+
+    font-size: clamp(2.2rem, 6vw, 3.2rem);
+    line-height: 1;
+
+    margin-bottom: 10px;
+
+    text-shadow:
+        0 0 12px rgba(255, 49, 49, 0.9),
+        0 0 36px rgba(255, 49, 49, 0.55);
+}
+
+.auth-container h1::first-letter {
+    color: #ff3131;
+}
+
+/* add this paragraph below h1 */
+.auth-container .tagline {
+    margin: 0 0 30px;
+
+    color: rgba(255, 255, 255, 0.72);
+
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* FORM */
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* INPUT */
+
+input {
+    width: 100%;
+    padding: 16px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: white;
+    font-size: 1rem;
+
+    outline: none;
+
+    transition: 0.3s ease;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+input:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+input:focus {
+    border-color: rgba(255, 49, 49, 0.85);
+
+    box-shadow:
+        0 0 0 4px rgba(255, 49, 49, 0.14),
+        0 0 22px rgba(255, 49, 49, 0.58);
+
+    transform: translateY(-2px);
+}
+
+/* BUTTON */
+
+button {
+    width: 100%;
+    padding: 16px;
+
+    border: none;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff3131,
+            #ff5e3a,
+            #ffb703
+        );
+
+    color: #111;
+
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+
+    cursor: pointer;
+
+    margin-top: 6px;
+
+    box-shadow:
+        0 16px 35px rgba(255, 49, 49, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+
+    transition: 0.35s ease;
+}
+
+button:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 22px 46px rgba(255, 49, 49, 0.58),
+        0 0 30px rgba(255, 183, 3, 0.55);
+
+    filter: brightness(1.08);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* TEXT */
+
+p {
+    margin-top: 24px;
+
+    color: rgba(255, 255, 255, 0.68);
+
+    font-size: 0.94rem;
+}
+
+/* LINK */
+
+a {
+    color: #ffb703;
+
+    text-decoration: none;
+    font-weight: 800;
+
+    transition: 0.3s ease;
+}
+
+a:hover {
+    color: #ff3131;
+    text-shadow: 0 0 14px rgba(255, 49, 49, 0.8);
+}
+
+/* MOBILE */
+
+@media (max-width: 500px) {
+    body {
+        padding: 18px;
+    }
+
+    .auth-container {
+        padding: 42px 24px 34px;
+        border-radius: 22px;
+    }
+
+    .auth-container::after {
+        top: 14px;
+        right: -58px;
+        font-size: 0.58rem;
+    }
+
+    input,
+    button {
+        padding: 15px;
+    }
+}
+.error-message {
+    width: 100%;
+    margin: 0 0 18px;
+    padding: 13px 15px;
+
+    border-radius: 12px;
+    border: 1px solid rgba(255, 49, 49, 0.45);
+
+    background: rgba(255, 49, 49, 0.13);
+    color: #ffb3b3;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    box-shadow: 0 0 18px rgba(255, 49, 49, 0.18);
+}

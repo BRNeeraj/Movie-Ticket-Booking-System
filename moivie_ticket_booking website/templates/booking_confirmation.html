@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #07060a;
+            --surface: #0f0d14;
+            --card: #15121d;
+            --border: rgba(212,160,23,.18);
+            --gold: #d4a017;
+            --gold2: #f5c842;
+            --red: #8b1a1a;
+            --text: #f2ecd8;
+            --muted: #8d8267;
+            --green: #35d07f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 18px;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 20% 10%, rgba(212,160,23,.16), transparent 34%),
+                radial-gradient(circle at 80% 20%, rgba(139,26,26,.28), transparent 34%),
+                linear-gradient(135deg, #050406, #120a0d 48%, #050406);
+        }
+
+        .ticket-shell {
+            width: min(960px, 100%);
+            display: grid;
+            grid-template-columns: 1fr 330px;
+            background: rgba(15,13,20,.9);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 30px 90px rgba(0,0,0,.6), 0 0 55px rgba(212,160,23,.12);
+        }
+
+        .ticket-main {
+            padding: 42px;
+        }
+
+        .ticket-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(53,208,127,.35);
+            color: var(--green);
+            background: rgba(53,208,127,.08);
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .ticket-status.failed {
+            color: #ff9b9b;
+            border-color: rgba(255,80,80,.35);
+            background: rgba(255,80,80,.09);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .sub {
+            max-width: 560px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .detail-card {
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: .66rem;
+            font-weight: 800;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+
+        .value {
+            font-size: .95rem;
+            font-weight: 700;
+        }
+
+        .value.gold {
+            color: var(--gold2);
+            font-size: 1.1rem;
+        }
+
+        .ticket-side {
+            position: relative;
+            padding: 34px 30px;
+            background:
+                linear-gradient(160deg, rgba(212,160,23,.2), rgba(139,26,26,.18)),
+                var(--card);
+            border-left: 1px dashed rgba(212,160,23,.35);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ticket-side::before,
+        .ticket-side::after {
+            content: "";
+            position: absolute;
+            left: -15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #07060a;
+            border: 1px solid var(--border);
+        }
+
+        .ticket-side::before { top: -15px; }
+        .ticket-side::after { bottom: -15px; }
+
+        .booking-code {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold2);
+            font-size: 2.1rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .side-note {
+            color: rgba(242,236,216,.78);
+            font-size: .82rem;
+            line-height: 1.7;
+            margin-top: 14px;
+        }
+
+        .qr-box {
+            width: 132px;
+            height: 132px;
+            margin: 30px auto;
+            padding: 12px;
+            background:
+                linear-gradient(90deg, #111 50%, transparent 50%),
+                linear-gradient(#111 50%, transparent 50%),
+                #f2ecd8;
+            background-size: 18px 18px;
+            border: 10px solid #f2ecd8;
+            box-shadow: 0 16px 40px rgba(0,0,0,.35);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 6px;
+            padding: 13px 18px;
+            font-family: 'Poppins', sans-serif;
+            font-size: .78rem;
+            font-weight: 900;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn.gold {
+            background: var(--gold);
+            color: #000;
+        }
+
+        .btn.dark {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 780px) {
+            .ticket-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-main {
+                padding: 30px 22px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-side {
+                border-left: none;
+                border-top: 1px dashed rgba(212,160,23,.35);
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="ticket-shell">
+        <section class="ticket-main">
+            {% if failed %}
+                <div class="ticket-status failed">Booking needs retry</div>
+                <h1>Payment Received, Booking Failed</h1>
+                <p class="sub">{{ booking.error_message or 'Your ticket could not be stored in the database. Please retry the booking or check the database connection.' }}</p>
+            {% else %}
+                <div class="ticket-status">Booking Confirmed</div>
+                <h1>Your Seats Are Ready</h1>
+                <p class="sub">Show this confirmation at the theatre counter. Your movie, seat, payment, and show details are listed below.</p>
+            {% endif %}
+
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <div class="label">Movie</div>
+                    <div class="value">{{ booking.movie_name }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="label">Seats</div>
+                    <div class="value gold">{{ booking.seat_number }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="label">Theatre</div>
+                    <div class="value">{{ booking.theatre }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="label">Show</div>
+                    <div class="value">{{ booking.show_date }} | {{ booking.show_time }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="label">Customer</div>
+                    <div class="value">{{ booking.name }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="label">Contact</div>
+                    <div class="value">{{ booking.email }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="label">Payment</div>
+                    <div class="value">{{ booking.payment_method }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="label">Total</div>
+                    <div class="value gold">Rs. {{ booking.total_amount }}</div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a class="btn gold" href="{{ url_for('home') }}#movies">Book Another Movie</a>
+                <button class="btn dark" onclick="window.print()">Print Ticket</button>
+            </div>
+        </section>
+
+        <aside class="ticket-side">
+            <div>
+                <div class="label">Booking ID</div>
+                <div class="booking-code">{{ booking.booking_id }}</div>
+                <div class="side-note">Keep this ID safe until the show is complete.</div>
+            </div>
+            <div class="qr-box" aria-label="Demo QR code"></div>
+            <div>
+                <div class="label">Namma Cinema</div>
+                <div class="side-note">Enjoy your show. Please reach the theatre 20 minutes before showtime.</div>
+            </div>
+        </aside>
+    </main>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Signup</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='auth.css') }}">
+
+</head>
+
+<body>
+
+<div class="auth-container">
+
+    <h1>Create Account</h1>
+
+    {% if error %}
+        <div class="error-message">{{ error }}</div>
+    {% endif %}
+
+    <form action="/register"
+          method="POST">
+
+        <input type="text"
+               name="username"
+               placeholder="Enter Username"
+               value="{{ username or '' }}"
+               required>
+
+        <input type="email"
+               name="email"
+               placeholder="Enter Email"
+               value="{{ email or '' }}"
+               required>
+
+        <input type="password"
+               name="password"
+               placeholder="Enter Password"
+               required>
+
+        <button type="submit">
+            Signup
+        </button>
+
+    </form>
+
+    <p>
+        Already have account?
+
+        <a href="/login">
+            Login
+        </a>
+    </p>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,536 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+/* BODY */
+
+body{
+    background: #0b0b0b;
+    color: white;
+    overflow-x: hidden;
+}
+
+
+/* HERO SECTION */
+
+.hero{
+    height: 100vh;
+
+    background:
+    linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)),
+    url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1974&auto=format&fit=crop');
+
+    background-size: cover;
+    background-position: center;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+}
+
+.hero-content{
+    z-index: 2;
+}
+
+.hero-title{
+
+    font-size: 4rem;
+    color: #ff3131;
+
+    margin-bottom: 20px;
+
+    text-shadow: 0 0 20px rgba(255,49,49,0.7);
+}
+
+.hero-subtitle{
+
+    font-size: 1.3rem;
+
+    color: #ddd;
+}
+
+
+/* MOVIE SECTION */
+
+.movies-section{
+
+    padding: 80px 5%;
+
+    background: #111;
+}
+
+.section-title{
+
+    text-align: center;
+
+    font-size: 2.8rem;
+
+    color: #ff3131;
+
+    margin-bottom: 60px;
+}
+
+
+/* MOVIE GRID */
+
+.movie-grid{
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    gap: 40px;
+}
+
+
+/* MOVIE CARD */
+
+.movie-card{
+
+    background: #151515;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    width: 320px;
+
+    cursor: pointer;
+
+    transition: 0.4s ease;
+
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.movie-card:hover{
+
+    transform: translateY(-12px) scale(1.03);
+
+    box-shadow: 0 0 30px rgba(255,49,49,0.6);
+}
+
+
+/* MOVIE IMAGE */
+
+.movie-card img{
+
+    width: 100%;
+
+    height: 450px;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+
+/* MOVIE INFO */
+
+.movie-info{
+
+    padding: 20px;
+
+    background: #1a1a1a;
+}
+
+.movie-info h3{
+
+    color: white;
+
+    font-size: 1.7rem;
+
+    margin-bottom: 10px;
+}
+
+.movie-info p{
+
+    color: #bbb;
+
+    font-size: 1rem;
+}
+
+
+/* POPUP */
+
+.movie-popup{
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0,0,0,0.85);
+
+    display: none;
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 999;
+}
+
+
+/* POPUP CONTENT */
+
+.popup-content{
+
+    background: #1a1a1a;
+
+    padding: 35px;
+
+    width: 420px;
+
+    border-radius: 20px;
+
+    text-align: center;
+
+    animation: popupAnim 0.4s ease;
+
+    box-shadow: 0 0 30px rgba(255,49,49,0.5);
+}
+
+
+/* POPUP IMAGE */
+
+.popup-content img{
+
+    width: 100%;
+
+    height: 300px;
+
+    object-fit: cover;
+
+    border-radius: 15px;
+
+    margin-bottom: 20px;
+}
+
+
+/* POPUP TEXT */
+
+.popup-content h2{
+
+    color: #ff3131;
+
+    margin-bottom: 15px;
+}
+
+.popup-content p{
+
+    margin: 10px 0;
+
+    color: #ddd;
+
+    line-height: 1.5;
+}
+
+
+/* CLOSE BUTTON */
+
+.close-btn{
+
+    float: right;
+
+    font-size: 30px;
+
+    cursor: pointer;
+
+    color: white;
+}
+
+
+/* POPUP ANIMATION */
+
+@keyframes popupAnim{
+
+    from{
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    to{
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+/* BOOKING FORM */
+
+.booking-container{
+
+    width: 500px;
+
+    margin: 80px auto;
+
+    background: rgba(255,255,255,0.08);
+
+    padding: 40px;
+
+    border-radius: 20px;
+
+    backdrop-filter: blur(10px);
+
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+
+/* BOOKING TITLE */
+
+.booking-container h2{
+
+    text-align: center;
+
+    margin-bottom: 30px;
+
+    color: #ff3131;
+}
+
+
+/* FORM */
+
+form{
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+
+/* INPUTS */
+
+input,
+select{
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    border: none;
+
+    outline: none;
+
+    background: rgba(255,255,255,0.12);
+
+    color: white;
+
+    transition: 0.3s ease;
+}
+
+
+/* INPUT FOCUS */
+
+input:focus,
+select:focus{
+
+    box-shadow: 0 0 15px #ff3131;
+
+    transform: scale(1.02);
+}
+
+
+/* OPTION */
+
+option{
+
+    color: black;
+}
+
+
+/* BUTTON */
+
+button{
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: linear-gradient(45deg, #ff3131, #ff6b6b);
+
+    color: white;
+
+    font-size: 1rem;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+
+/* BUTTON HOVER */
+
+button:hover{
+
+    transform: scale(1.05);
+
+    box-shadow: 0 0 20px rgba(255,49,49,0.7);
+}
+
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+    .hero-title{
+
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle{
+
+        font-size: 1rem;
+    }
+
+    .movie-card{
+
+        width: 90%;
+    }
+
+    .booking-container{
+
+        width: 90%;
+    }
+
+    .popup-content{
+
+        width: 90%;
+    }
+}
+.error-message {
+    width: 100%;
+    margin: 0 0 18px;
+    padding: 13px 15px;
+
+    border-radius: 12px;
+    border: 1px solid rgba(255, 49, 49, 0.45);
+
+    background: rgba(255, 49, 49, 0.13);
+    color: #ffb3b3;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    box-shadow: 0 0 18px rgba(255, 49, 49, 0.18);
+}
+.admin-btn{
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#ffb400;
+
+    color:black;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    margin-left:10px;
+
+    transition:.3s;
+}
+
+.admin-btn:hover{
+
+    transform:scale(1.05);
+
+    box-shadow:
+    0 0 20px rgba(255,180,0,.7);
+}
+.profile-btn{
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#00b894;
+
+    color:white;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    margin-left:10px;
+
+    transition:.3s;
+}
+
+.profile-btn:hover{
+
+    transform:scale(1.05);
+
+    box-shadow:
+    0 0 20px rgba(0,184,148,.7);
+}
+.logout-btn,
+.profile-btn,
+.admin-btn{
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+    transition:.3s;
+
+    margin-right:10px;
+}
+
+.logout-btn{
+
+    background:#ff3131;
+    color:white;
+}
+
+.profile-btn{
+
+    background:#00b894;
+    color:white;
+}
+
+.admin-btn{
+
+    background:#d4a017;
+    color:black;
+}
+
+.logout-btn:hover,
+.profile-btn:hover,
+.admin-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 0 20px rgba(255,255,255,.2);
+}

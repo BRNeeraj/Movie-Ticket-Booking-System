@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Namma Cinema — South Indian Movie Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        :root {
+            --bg:       #07060a;
+            --surface:  #0f0d14;
+            --card:     #13111a;
+            --border:   rgba(212,160,23,0.12);
+            --gold:     #d4a017;
+            --gold2:    #f5c842;
+            --crimson:  #8b1a1a;
+            --red:      #c0392b;
+            --text:     #f2ecd8;
+            --muted:    #7a6f55;
+            --green:    #27ae60;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+        #loadingScreen {
+            position: fixed; inset: 0; z-index: 5000;
+            display: flex; align-items: center; justify-content: center;
+            background:
+                radial-gradient(circle at center, rgba(212,160,23,.16), transparent 34%),
+                #030305;
+            transition: opacity .7s ease, visibility .7s ease;
+        }
+        #loadingScreen.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-card {
+            text-align: center;
+            animation: loaderPulse 1.3s ease-in-out infinite alternate;
+        }
+        .loader-icon {
+            font-size: 4rem;
+            filter: drop-shadow(0 0 22px rgba(212,160,23,.6));
+            margin-bottom: .8rem;
+        }
+        .loader-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 6vw, 4rem);
+            color: var(--gold2);
+            text-shadow: 0 0 28px rgba(212,160,23,.45);
+        }
+        .loader-sub {
+            color: var(--muted);
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: .7rem;
+        }
+        @keyframes loaderPulse {
+            from { transform: scale(.96); opacity: .72; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .cinema-effects {
+            position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;
+        }
+        .floating-light {
+            position: absolute;
+            width: 150px; height: 150px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(212,160,23,.24), transparent 68%);
+            filter: blur(18px);
+            animation: floatLight 9s ease-in-out infinite alternate;
+        }
+        .floating-light.one { top: 14%; left: 8%; }
+        .floating-light.two { top: 62%; right: 12%; animation-delay: -3s; background: radial-gradient(circle, rgba(139,26,26,.28), transparent 68%); }
+        .floating-light.three { bottom: 8%; left: 42%; animation-delay: -5s; }
+        @keyframes floatLight {
+            from { transform: translate3d(0,0,0) scale(.9); }
+            to { transform: translate3d(80px,-60px,0) scale(1.2); }
+        }
+        .smoke {
+            position: absolute;
+            width: 520px; height: 160px;
+            left: -100px; bottom: 8%;
+            background: radial-gradient(ellipse, rgba(255,255,255,.08), transparent 65%);
+            filter: blur(30px);
+            animation: smokeDrift 15s linear infinite;
+        }
+        .smoke.two { left: auto; right: -160px; bottom: 28%; animation-delay: -7s; }
+        @keyframes smokeDrift {
+            from { transform: translateX(-10%) scale(1); opacity: .25; }
+            50% { opacity: .5; }
+            to { transform: translateX(18%) scale(1.25); opacity: .15; }
+        }
+        .spotlight {
+            position: absolute;
+            top: -30%; left: 48%;
+            width: 42vw; height: 130vh;
+            background: linear-gradient(180deg, rgba(245,200,66,.16), transparent 70%);
+            transform: rotate(12deg);
+            filter: blur(20px);
+            animation: spotlightSweep 8s ease-in-out infinite alternate;
+        }
+        @keyframes spotlightSweep {
+            from { transform: translateX(-12vw) rotate(8deg); opacity: .2; }
+            to { transform: translateX(12vw) rotate(-10deg); opacity: .42; }
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top:0; left:0; right:0; z-index: 999;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 3rem; height: 68px;
+            background: rgba(7,6,10,0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: .7rem;
+        }
+        .nav-logo-kannada {
+            font-size: 1.6rem; color: var(--gold); line-height: 1;
+        }
+        .nav-logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem; font-weight: 700; letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .nav-logo-sub {
+            font-size: .58rem; color: var(--muted); letter-spacing: 2px;
+            text-transform: uppercase; margin-top: 1px;
+        }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a {
+            color: var(--muted); text-decoration: none;
+            font-size: .78rem; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; transition: color .2s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+        }
+        .nav-book-btn {
+            background: var(--gold); color: #000;
+            padding: .42rem 1.3rem; border-radius: 3px;
+            font-size: .75rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer; border: none;
+            font-family: 'Poppins', sans-serif; transition: all .2s;
+            text-decoration: none;
+        }
+        .nav-book-btn:hover { background: var(--gold2); }
+        .nav-link-btn {
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: .42rem .85rem;
+            border-radius: 3px;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all .2s;
+        }
+        .nav-link-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            position: relative;
+            display: flex; align-items: center;
+            overflow: hidden;
+            padding-top: 68px;
+        }
+        .hero-video-bg {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 70% 50%, rgba(139,26,26,.18) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 50% at 15% 30%, rgba(212,160,23,.07) 0%, transparent 60%),
+                linear-gradient(180deg, #07060a 0%, #0c0a10 100%);
+        }
+        .hero-carousel-bg {
+            position: absolute; inset: 0;
+        }
+        .hero-slide {
+            position: absolute; inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.05);
+            transition: opacity 1s ease, transform 6s ease;
+            filter: brightness(.45) saturate(1.18);
+        }
+        .hero-slide.active {
+            opacity: .52;
+            transform: scale(1);
+        }
+        .hero-slide::after {
+            content: "";
+            position: absolute; inset: 0;
+            background:
+                linear-gradient(90deg, rgba(7,6,10,.95), rgba(7,6,10,.45), rgba(7,6,10,.88)),
+                linear-gradient(180deg, rgba(7,6,10,.2), var(--bg));
+        }
+        /* Decorative film grain */
+        .hero-grain {
+            position: absolute; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        /* Kolam border */
+        .kolam-border {
+            position: absolute; top: 68px; left: 0; right: 0; height: 3px;
+            background: repeating-linear-gradient(90deg,
+                var(--gold) 0, var(--gold) 10px,
+                var(--crimson) 10px, var(--crimson) 20px,
+                #e07b39 20px, #e07b39 30px,
+                var(--crimson) 30px, var(--crimson) 40px);
+            opacity: .7;
+        }
+        .hero-inner {
+            position: relative; z-index: 2;
+            max-width: 1200px; margin: 0 auto;
+            padding: 6rem 3rem 4rem;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: rgba(212,160,23,.1); border: 1px solid rgba(212,160,23,.25);
+            color: var(--gold); font-size: .65rem; font-weight: 700; letter-spacing: 2px;
+            text-transform: uppercase; padding: .3rem .9rem; border-radius: 2px;
+            margin-bottom: 1.5rem;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 6vw, 5.2rem);
+            font-weight: 900; line-height: 1.0;
+            margin-bottom: 1.3rem;
+        }
+        .hero h1 em {
+            font-style: italic; color: var(--gold);
+            display: block;
+        }
+        .hero-sub {
+            font-size: 3rem; font-family: 'Playfair Display', serif;
+            font-style: italic; opacity: .3; display: block;
+        }
+        .hero p {
+            color: var(--muted); font-size: .95rem; line-height: 1.8;
+            margin-bottom: 2.5rem; max-width: 420px;
+        }
+        .hero p strong { color: var(--gold); font-weight: 600; }
+        .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+        .btn-gold {
+            background: var(--gold); color: #000; border: none; cursor: pointer;
+            padding: .8rem 2rem; border-radius: 3px;
+            font-family: 'Poppins', sans-serif; font-size: .82rem; font-weight: 700;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            transition: all .25s; box-shadow: 0 4px 20px rgba(212,160,23,.3);
+            text-decoration: none; display: inline-block;
+        }
+        .btn-gold:hover { background: var(--gold2); transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent; color: var(--text);
+            border: 1px solid rgba(212,160,23,.25); cursor: pointer;
+            padding: .8rem 2rem; border-radius: 3px;
+            font-family: 'Poppins', sans-serif; font-size: .82rem; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+            transition: all .25s; text-decoration: none; display: inline-block;
+        }
+        .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+        .hero-langs { display: flex; gap: .6rem; flex-wrap: wrap; }
+        .lang-tag {
+            background: rgba(212,160,23,.07); border: 1px solid rgba(212,160,23,.18);
+            color: var(--gold); font-size: .65rem; font-weight: 600;
+            letter-spacing: 1.5px; padding: .25rem .7rem; border-radius: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Right side: theatre/show cards */
+        .hero-cards { display: flex; flex-direction: column; gap: .9rem; }
+        .theatre-preview {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 1.1rem 1.3rem;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all .3s; cursor: pointer; position: relative; overflow: hidden;
+        }
+        .theatre-preview::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--gold); opacity: 0; transition: opacity .2s;
+        }
+        .theatre-preview:hover { border-color: rgba(212,160,23,.35); transform: translateX(4px); }
+        .theatre-preview:hover::before { opacity: 1; }
+        .tp-name { font-weight: 700; font-size: .92rem; margin-bottom: .2rem; }
+        .tp-loc { font-size: .72rem; color: var(--muted); display: flex; align-items: center; gap: .3rem; }
+        .tp-times { display: flex; gap: .5rem; flex-wrap: wrap; }
+        .time-badge {
+            background: rgba(212,160,23,.1); border: 1px solid rgba(212,160,23,.2);
+            color: var(--gold); font-size: .7rem; font-weight: 600;
+            padding: .22rem .6rem; border-radius: 2px; cursor: pointer;
+            transition: all .15s;
+        }
+        .time-badge:hover { background: var(--gold); color: #000; }
+        .time-badge.full { border-color: rgba(255,255,255,.06); color: var(--muted); cursor: not-allowed; text-decoration: line-through; }
+        .tp-stars { color: var(--gold); font-size: .8rem; }
+
+        /* ── DIVIDER ── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            max-width: 1200px; margin: 0 auto;
+        }
+
+        /* ── SECTION ── */
+        .sec { max-width: 1200px; margin: 0 auto; padding: 5rem 3rem; }
+        .sec-head {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            margin-bottom: 2.8rem;
+        }
+        .sec-label {
+            font-size: .63rem; font-weight: 700; letter-spacing: 3px;
+            color: #e07b39; text-transform: uppercase; margin-bottom: .4rem;
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .sec-label::before { content: ''; width: 18px; height: 2px; background: #e07b39; display: inline-block; }
+        .sec-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem; font-weight: 900; line-height: 1;
+        }
+        .sec-all {
+            color: var(--gold); font-size: .75rem; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            text-decoration: none; border-bottom: 1px solid rgba(212,160,23,.3);
+            padding-bottom: .2rem; transition: all .2s;
+        }
+        .sec-all:hover { letter-spacing: 2.5px; }
+
+        /* ── MOVIES GRID ── */
+        .movies-section { background: var(--bg); }
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+            gap: 1.4rem;
+        }
+        .movie-card { visibility: visible;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px; overflow: hidden;
+            cursor: pointer; transition: all .3s;
+            position: relative;
+        }
+        .movie-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212,160,23,.4);
+            box-shadow:
+                0 20px 50px rgba(0,0,0,.6),
+                0 0 32px rgba(212,160,23,.24),
+                0 0 18px rgba(139,26,26,.22);
+        }
+        .movie-card img {
+            width: 100%; height: 255px;
+            object-fit: cover; display: block;
+            transition: transform .4s;
+            filter: brightness(.85);
+        }
+        .movie-card:hover img { transform: scale(1.05); filter: brightness(1); }
+
+        /* Poster fallback */
+        .movie-card .poster-fallback {
+            width: 100%; height: 255px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 5rem; position: relative;
+        }
+        .poster-emoji {
+            position: relative; z-index: 2; font-size: 5rem;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+        }
+        .poster-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, transparent 40%, var(--card) 100%);
+        }
+
+        .mc-top-badges {
+            position: absolute; top: 10px; left: 10px; right: 10px;
+            display: flex; justify-content: space-between; z-index: 2;
+        }
+        .mc-lang { background: var(--crimson); color: #fff; font-size: .58rem; font-weight: 700; letter-spacing: 1px; padding: .18rem .5rem; border-radius: 2px; text-transform: uppercase; }
+        .mc-format { background: var(--gold); color: #000; font-size: .58rem; font-weight: 700; padding: .18rem .5rem; border-radius: 2px; }
+
+        .movie-info {
+            padding: .85rem 1rem;
+            position: relative; z-index: 2;
+        }
+        .movie-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: .95rem; font-weight: 700; margin-bottom: .25rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .movie-info p { font-size: .72rem; color: var(--muted); margin-bottom: .7rem; }
+        .mc-bottom { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7rem; }
+        .mc-rating { color: var(--gold); font-size: .78rem; font-weight: 700; }
+        .mc-price { font-size: .78rem; font-weight: 600; color: var(--text); }
+        .mc-book-btn {
+            width: 100%; padding: .5rem;
+            background: transparent; border: 1px solid rgba(212,160,23,.25);
+            color: var(--gold); border-radius: 3px;
+            font-family: 'Poppins', sans-serif; font-size: .72rem; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+            transition: all .2s;
+        }
+        .mc-book-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+
+        /* ── THEATRES ── */
+        .theatres-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.4rem; }
+        .theatre-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; overflow: hidden; transition: all .3s;
+        }
+        .theatre-card:hover { border-color: rgba(212,160,23,.35); transform: translateY(-4px); }
+        .tc-head {
+            padding: 1.3rem 1.4rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .tc-icon { font-size: 1.8rem; margin-bottom: .6rem; }
+        .tc-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem; font-weight: 700; margin-bottom: .25rem;
+        }
+        .tc-loc { font-size: .72rem; color: var(--muted); }
+        .tc-stars { color: var(--gold); font-size: .8rem; margin-top: .3rem; }
+        .tc-amenities {
+            padding: .8rem 1.4rem; display: flex; gap: .4rem; flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+        .amenity {
+            font-size: .6rem; font-weight: 700; letter-spacing: .8px;
+            border: 1px solid var(--border); color: var(--muted);
+            padding: .18rem .5rem; border-radius: 2px; text-transform: uppercase;
+        }
+        .tc-shows { padding: .9rem 1.4rem 1.3rem; }
+        .show-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .5rem; }
+        .show-label { font-size: .65rem; color: var(--muted); font-weight: 600; min-width: 70px; letter-spacing: .5px; }
+        .slot {
+            padding: .28rem .7rem; border: 1px solid rgba(212,160,23,.2);
+            border-radius: 2px; font-size: .7rem; font-weight: 700; color: var(--gold);
+            cursor: pointer; transition: all .15s; background: transparent;
+            font-family: 'Poppins', sans-serif;
+        }
+        .slot:hover, .slot.active { background: var(--gold); color: #000; border-color: var(--gold); }
+        .slot.full { border-color: rgba(255,255,255,.06); color: var(--muted); cursor: not-allowed; text-decoration: line-through; }
+
+        /* ── SCHEDULE TABLE ── */
+        .schedule-wrap {
+            background: var(--card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+        }
+        .sch-tabs {
+            display: flex; border-bottom: 1px solid var(--border); overflow-x: auto;
+        }
+        .sch-tab {
+            padding: .85rem 1.4rem; font-size: .72rem; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
+            cursor: pointer; transition: all .2s; border: none; border-bottom: 2px solid transparent;
+            background: none; font-family: 'Poppins', sans-serif; flex-shrink: 0;
+        }
+        .sch-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+        .sch-tab:hover { color: var(--text); }
+        .sch-table { width: 100%; border-collapse: collapse; }
+        .sch-table th {
+            background: var(--surface); padding: .8rem 1.2rem;
+            text-align: left; font-size: .62rem; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+        .sch-table td {
+            padding: .85rem 1.2rem; font-size: .84rem;
+            border-bottom: 1px solid rgba(212,160,23,.05);
+            transition: background .15s;
+        }
+        .sch-table tr:last-child td { border-bottom: none; }
+        .sch-table tr:hover td { background: rgba(212,160,23,.03); }
+        .t-movie { font-weight: 700; font-family: 'Playfair Display', serif; font-size: .88rem; }
+        .t-theatre { color: var(--muted); font-size: .75rem; margin-top: .1rem; }
+        .b-time { background: rgba(212,160,23,.1); color: var(--gold); padding: .22rem .6rem; border-radius: 2px; font-size: .72rem; font-weight: 700; display: inline-block; }
+        .b-lang { background: rgba(139,26,26,.15); color: #fc8181; padding: .22rem .6rem; border-radius: 2px; font-size: .7rem; font-weight: 700; display: inline-block; }
+        .avail-ok { color: #4ade80; font-size: .75rem; font-weight: 700; }
+        .avail-few { color: #fb923c; font-size: .75rem; font-weight: 700; }
+        .avail-no { color: var(--muted); font-size: .75rem; font-weight: 600; text-decoration: line-through; }
+        .sch-book-btn {
+            padding: .35rem .85rem;
+            background: transparent; border: 1px solid rgba(212,160,23,.3);
+            color: var(--gold); border-radius: 2px;
+            font-family: 'Poppins', sans-serif; font-size: .7rem; font-weight: 700;
+            letter-spacing: .8px; text-transform: uppercase; cursor: pointer; transition: all .2s;
+        }
+        .sch-book-btn:hover { background: var(--gold); color: #000; }
+
+        /* ── MOVIE POPUP ── */
+        .movie-popup {
+            display: none; position: fixed; inset: 0; z-index: 2000;
+            background: rgba(0,0,0,.88); backdrop-filter: blur(10px);
+            align-items: center; justify-content: center;
+            animation: fadeIn .3s ease;
+        }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .popup-content {
+            background: var(--surface); border: 1px solid rgba(212,160,23,.2);
+            border-radius: 10px; max-width: 560px; width: 90%; overflow: hidden;
+            position: relative; animation: slideUp .3s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .popup-poster {
+            width: 100%; height: 220px; object-fit: cover; display: block;
+            filter: brightness(.75);
+        }
+        .popup-poster-fallback {
+            height: 220px; display: flex; align-items: center; justify-content: center;
+            font-size: 6rem;
+        }
+        .popup-body { padding: 2rem 2rem 1.5rem; }
+        .popup-body h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem; font-weight: 900; margin-bottom: 1rem;
+        }
+        .popup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem 1.5rem; margin-bottom: 1.2rem; }
+        .popup-field { font-size: .82rem; }
+        .popup-field strong { color: var(--muted); font-size: .65rem; letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: .15rem; }
+        .popup-field span { font-weight: 600; }
+        .popup-rating-row { display: flex; align-items: center; gap: .3rem; font-size: 1.1rem; margin-bottom: 1rem; }
+        .popup-desc {
+            font-size: .84rem; color: var(--muted); line-height: 1.7;
+            margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+        }
+        .popup-actions { display: flex; gap: 1rem; }
+        .popup-book-btn {
+            flex: 1; padding: .8rem;
+            background: var(--gold); color: #000; border: none; border-radius: 3px;
+            font-family: 'Poppins', sans-serif; font-size: .82rem; font-weight: 700;
+            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: all .2s;
+        }
+        .popup-book-btn:hover { background: var(--gold2); }
+        .popup-close-btn {
+            padding: .8rem 1.5rem;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--muted); border-radius: 3px;
+            font-family: 'Poppins', sans-serif; font-size: .82rem; font-weight: 600;
+            cursor: pointer; transition: all .2s;
+        }
+        .popup-close-btn:hover { border-color: var(--text); color: var(--text); }
+        .close-btn {
+            position: absolute; top: 1rem; right: 1rem;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,0,0,.5); border: 1px solid var(--border);
+            color: var(--text); font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s; z-index: 1;
+        }
+        .close-btn:hover { background: var(--crimson); border-color: var(--crimson); }
+
+        /* ── BOOKING FORM ── */
+        .booking-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .booking-container {
+            max-width: 1200px; margin: 0 auto; padding: 5rem 3rem;
+            display: grid; grid-template-columns: 1fr 1.1fr; gap: 4rem; align-items: start;
+        }
+        .booking-left h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem; font-weight: 900; margin-bottom: .4rem;
+        }
+        .booking-left .bl-sub { font-size: .85rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+        .booking-left form { display: flex; flex-direction: column; gap: 1rem; }
+        .field-group { display: flex; flex-direction: column; gap: .4rem; }
+        .field-label {
+            font-size: .62rem; font-weight: 700; letter-spacing: 2px;
+            text-transform: uppercase; color: var(--muted);
+        }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        input[type=text], input[type=email], input[type=tel], input[type=date], select {
+            padding: .75rem 1rem;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 4px; color: var(--text);
+            font-family: 'Poppins', sans-serif; font-size: .88rem;
+            outline: none; transition: border-color .2s, box-shadow .2s;
+            width: 100%; appearance: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212,160,23,.1);
+        }
+        input::placeholder { color: var(--muted); }
+        select option { background: var(--card); }
+        .submit-btn {
+            padding: .9rem; background: var(--gold); color: #000; border: none; border-radius: 4px;
+            font-family: 'Poppins', sans-serif; font-size: .85rem; font-weight: 800;
+            letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+            transition: all .25s; box-shadow: 0 4px 20px rgba(212,160,23,.25); margin-top: .3rem;
+        }
+        .submit-btn:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(212,160,23,.4); }
+
+        /* ── SEAT PICKER ── */
+        .seat-picker-panel {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 2rem;
+        }
+        .sp-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem; font-weight: 700; margin-bottom: .3rem;
+        }
+        .sp-sub { font-size: .75rem; color: var(--muted); margin-bottom: 1.5rem; }
+        .screen-wrap { text-align: center; margin-bottom: 1.8rem; }
+        .screen-bar {
+            display: inline-block; width: 80%; height: 6px;
+            background: linear-gradient(90deg, transparent, rgba(212,160,23,.6), rgba(245,200,66,1), rgba(212,160,23,.6), transparent);
+            border-radius: 2px; box-shadow: 0 0 20px rgba(212,160,23,.35); margin-bottom: .4rem;
+        }
+        .screen-text { font-size: .6rem; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; opacity: .7; }
+
+        .seat-grid-wrap { margin-bottom: 1.3rem; }
+        .seat-row-wrap { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+        .row-lbl { width: 16px; font-size: .6rem; font-weight: 700; color: var(--muted); text-align: center; flex-shrink: 0; }
+        .seat {
+            width: 27px; height: 23px; border-radius: 4px 4px 2px 2px;
+            border: 1px solid var(--border); background: var(--card);
+            cursor: pointer; transition: all .15s; font-size: .52rem;
+            font-weight: 700; color: var(--muted);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; flex-shrink: 0;
+        }
+        .seat::before {
+            content: ''; position: absolute;
+            top: -3px; left: 3px; right: 3px; height: 3px;
+            background: rgba(255,255,255,.04); border-radius: 2px 2px 0 0;
+        }
+        .seat:hover:not(.taken):not(.selected) { border-color: rgba(212,160,23,.5); background: rgba(212,160,23,.12); transform: scale(1.1); }
+        .seat.selected { background: var(--gold); border-color: var(--gold); color: #000; }
+        .seat.premium { border-color: rgba(139,26,26,.4); }
+        .seat.premium.selected { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+        .seat.premium:hover:not(.taken):not(.selected) { border-color: rgba(139,26,26,.6); background: rgba(139,26,26,.15); }
+        .seat.taken { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.05); cursor: not-allowed; opacity: .35; }
+        .seat-aisle { width: 14px; flex-shrink: 0; }
+
+        .legend-wrap { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.3rem; }
+        .leg-item { display: flex; align-items: center; gap: .4rem; font-size: .7rem; color: var(--muted); }
+        .leg-box { width: 13px; height: 11px; border-radius: 2px; }
+        .lb-std { background: var(--card); border: 1px solid rgba(255,255,255,.12); }
+        .lb-sel { background: var(--gold); }
+        .lb-prem { background: var(--card); border: 1px solid rgba(139,26,26,.4); }
+        .lb-taken { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.05); opacity: .4; }
+
+        .seat-summary {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 4px; padding: .9rem 1.1rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .ss-label { font-size: .62rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
+        .ss-seats { font-size: .88rem; font-weight: 700; }
+        .ss-price { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 700; color: var(--gold); }
+
+        /* ── SUCCESS MODAL ── */
+        #successModal {
+            display: none; position: fixed; inset: 0; z-index: 3000;
+            background: rgba(0,0,0,.9); backdrop-filter: blur(10px);
+            align-items: center; justify-content: center;
+        }
+        .success-box {
+            background: var(--surface); border: 1px solid rgba(212,160,23,.25);
+            border-radius: 10px; max-width: 440px; width: 90%; overflow: hidden;
+            animation: slideUp .3s ease;
+        }
+        .success-top {
+            background: linear-gradient(135deg, rgba(212,160,23,.15), rgba(139,26,26,.1));
+            padding: 2.5rem 2.5rem 2rem; text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .success-icon { font-size: 3rem; margin-bottom: .8rem; }
+        .success-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900; }
+        .success-sub { color: var(--muted); font-size: .82rem; margin-top: .3rem; }
+        .success-body { padding: 1.5rem 2rem 2rem; }
+        .confirm-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: .55rem 0; border-bottom: 1px solid var(--border); font-size: .82rem;
+        }
+        .confirm-row:last-child { border-bottom: none; }
+        .cr-label { color: var(--muted); }
+        .cr-val { font-weight: 700; text-align: right; }
+        .cr-val.gold { color: var(--gold); }
+        .done-btn {
+            width: 100%; padding: .85rem; background: var(--gold); color: #000;
+            border: none; border-radius: 3px; font-family: 'Poppins', sans-serif;
+            font-size: .82rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; margin-top: 1.2rem; transition: all .2s;
+        }
+        .done-btn:hover { background: var(--gold2); }
+
+        /* PAYMENT AND TRAILER MODALS */
+        .booking-modal {
+            display: none; position: fixed; inset: 0; z-index: 3200;
+            background: rgba(0,0,0,.9); backdrop-filter: blur(12px);
+            align-items: center; justify-content: center; padding: 1.5rem;
+        }
+        .payment-box,
+        .trailer-box {
+            background: var(--surface); border: 1px solid rgba(212,160,23,.25);
+            border-radius: 10px; width: min(92vw, 520px); overflow: hidden;
+            box-shadow: 0 28px 90px rgba(0,0,0,.65);
+            animation: slideUp .3s ease;
+        }
+        .trailer-box { width: min(92vw, 860px); }
+        .payment-head,
+        .trailer-head {
+            padding: 1.4rem 1.6rem;
+            background: linear-gradient(135deg, rgba(212,160,23,.15), rgba(139,26,26,.12));
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        }
+        .payment-title,
+        .trailer-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem; font-weight: 900;
+        }
+        .modal-x {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 1px solid var(--border); background: rgba(0,0,0,.35);
+            color: var(--text); cursor: pointer;
+        }
+        .payment-body { padding: 1.5rem; }
+        .pay-summary {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 1rem; margin-bottom: 1.2rem;
+        }
+        .pay-row {
+            display: flex; justify-content: space-between; gap: 1rem;
+            padding: .45rem 0; border-bottom: 1px solid rgba(212,160,23,.08);
+            font-size: .82rem;
+        }
+        .pay-row:last-child { border-bottom: none; }
+        .pay-row span:first-child { color: var(--muted); }
+        .pay-row span:last-child { font-weight: 800; text-align: right; }
+        .pay-methods { display: grid; grid-template-columns: repeat(3,1fr); gap: .65rem; margin-bottom: 1rem; }
+        .pay-option {
+            padding: .75rem .6rem; border-radius: 4px;
+            border: 1px solid var(--border); background: var(--card);
+            color: var(--text); cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: .74rem; font-weight: 800;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .pay-option.active,
+        .pay-option:hover {
+            background: var(--gold); border-color: var(--gold); color: #000;
+        }
+        .pay-fields {
+            display: grid; grid-template-columns: 1fr 1fr; gap: .8rem;
+        }
+        .pay-fields .wide { grid-column: 1/-1; }
+        .modal-actions { display: flex; gap: .8rem; margin-top: 1.2rem; }
+        .modal-actions button { flex: 1; }
+        .trailer-frame {
+            position: relative; width: 100%; aspect-ratio: 16 / 9;
+            background:
+                radial-gradient(circle at center, rgba(212,160,23,.18), transparent 55%),
+                #050505;
+        }
+        .trailer-frame iframe {
+            position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+        }
+        .trailer-note {
+            padding: 1rem 1.5rem; color: var(--muted); font-size: .78rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem; max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 3rem;
+        }
+        .foot-brand .nav-logo-text { font-size: 1rem; margin-bottom: .4rem; }
+        .foot-desc { font-size: .76rem; color: var(--muted); line-height: 1.6; max-width: 200px; margin-top: .5rem; }
+        .foot-col h4 { font-size: .62rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: .9rem; }
+        .foot-col a { display: block; color: var(--muted); font-size: .78rem; text-decoration: none; margin-bottom: .45rem; transition: color .2s; }
+        .foot-col a:hover { color: var(--text); }
+        .foot-bottom {
+            border-top: 1px solid var(--border); padding: 1.2rem 3rem;
+            max-width: 1200px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .fb-text { font-size: .68rem; color: var(--muted); }
+
+        @media(max-width:900px) {
+            nav { padding: 0 1.5rem; }
+            .nav-links { display: none; }
+            .nav-actions { gap: .45rem; }
+            .nav-link-btn { display: none; }
+            .hero-inner { grid-template-columns: 1fr; padding: 3rem 1.5rem; }
+            .hero-cards { display: none; }
+            .sec { padding: 3rem 1.5rem; }
+            .theatres-grid { grid-template-columns: 1fr; }
+            .booking-container { grid-template-columns: 1fr; padding: 3rem 1.5rem; gap: 2.5rem; }
+            footer { flex-direction: column; padding: 2rem 1.5rem; }
+            .foot-bottom { flex-direction: column; gap: .5rem; text-align: center; padding: 1rem 1.5rem; }
+        }
+            @keyframes cardReveal {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .movie-card {
+            animation: cardReveal 0.6s ease both;
+        }
+        .movie-card:nth-child(1) { animation-delay: 0.05s; }
+        .movie-card:nth-child(2) { animation-delay: 0.1s; }
+        .movie-card:nth-child(3) { animation-delay: 0.15s; }
+        .movie-card:nth-child(4) { animation-delay: 0.2s; }
+        .movie-card:nth-child(5) { animation-delay: 0.25s; }
+        .movie-card:nth-child(6) { animation-delay: 0.3s; }
+        .movie-card:nth-child(7) { animation-delay: 0.35s; }
+        .movie-card:nth-child(8) { animation-delay: 0.4s; }
+        .movie-card:nth-child(9) { animation-delay: 0.45s; }
+        .movie-grid .movie-card { will-change: transform, opacity; }
+    </style>
+    <style id="gsap-override">
+        /* GSAP will override these once loaded */
+    </style>
+</head>
+<body>
+
+<div id="loadingScreen">
+    <div class="loader-card">
+        <div class="loader-icon">🎬</div>
+        <div class="loader-title">Welcome to CinemaVerse</div>
+        <div class="loader-sub">Preparing your screen</div>
+    </div>
+</div>
+
+<div class="cinema-effects" aria-hidden="true">
+    <div class="spotlight"></div>
+    <div class="smoke"></div>
+    <div class="smoke two"></div>
+    <div class="floating-light one"></div>
+    <div class="floating-light two"></div>
+    <div class="floating-light three"></div>
+</div>
+
+<!-- ── NAV ── -->
+<nav>
+    <div class="nav-logo">
+        <div style="font-size:1.7rem;color:var(--gold)">ನ</div>
+        <div>
+            <div class="nav-logo-text">NAMMA CINEMA</div>
+            <div class="nav-logo-sub">South India's Own</div>
+        </div>
+    </div>
+    <div class="nav-links">
+        <a href="#movies">Movies</a>
+        <a href="#theatres">Theatres</a>
+        <a href="#schedule">Schedule</a>
+        <a href="{% if is_logged_in %}#booking{% else %}/login?next=booking{% endif %}">Book Now</a>
+        {% if is_admin %}
+        <a href="/admin">Admin</a>
+        {% endif %}
+    </div>
+    <div class="nav-actions">
+        {% if current_user %}
+        <a class="nav-link-btn" href="/profile">{{ current_user }}</a>
+        <a class="nav-link-btn" href="/logout">Logout</a>
+        {% else %}
+        <a class="nav-link-btn" href="/login">Login</a>
+        {% endif %}
+        <a class="nav-book-btn" href="{% if is_logged_in %}#booking{% else %}/login?next=booking{% endif %}">🎟 Book Tickets</a>
+    </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+    <div class="hero-video-bg"></div>
+    <div class="hero-carousel-bg">
+        <div class="hero-slide active" style="background-image:url('{{ url_for('static', filename='images/kgf.jpg') }}')"></div>
+        <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='images/rrr.jpg') }}')"></div>
+        <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='images/leo.jpg') }}')"></div>
+        <div class="hero-slide" style="background-image:url('{{ url_for('static', filename='images/kantara.jpg') }}')"></div>
+    </div>
+    <div class="hero-grain"></div>
+    <div class="kolam-border"></div>
+    <div class="hero-inner">
+        <!-- Left -->
+        <div>
+            <div class="hero-badge">
+                <div class="badge-dot"></div>
+                Now Showing in Bengaluru
+            </div>
+            <h1>
+                SOUTH INDIA<br/>
+                <em>On The Big Screen</em>
+            </h1>
+            <p>
+                Book tickets for the biggest <strong>Kannada, Telugu, Tamil & Malayalam</strong> blockbusters at Bengaluru's finest theatres. Instant confirmation, zero queues.
+            </p>
+            <div class="hero-btns">
+                <a href="#movies" class="btn-gold">🎬 Browse Movies</a>
+                <a href="#schedule" class="btn-outline">📅 Show Timings</a>
+            </div>
+            <div class="hero-langs">
+                <span class="lang-tag">ಕನ್ನಡ Kannada</span>
+                <span class="lang-tag">తెలుగు Telugu</span>
+                <span class="lang-tag">தமிழ் Tamil</span>
+                <span class="lang-tag">മലയാളം Malayalam</span>
+            </div>
+        </div>
+        <!-- Right: Theatre quick slots -->
+        <div class="hero-cards">
+            <div class="theatre-preview">
+                <div>
+                    <div class="tp-name">🎭 PVR Orion Mall</div>
+                    <div class="tp-loc">📍 Rajajinagar, Bengaluru</div>
+                </div>
+                <div>
+                    <div class="tp-stars">★★★★★</div>
+                    <div class="tp-times" style="margin-top:.4rem">
+                        <span class="time-badge" onclick="goBook()">10:00 AM</span>
+                        <span class="time-badge" onclick="goBook()">2:30 PM</span>
+                        <span class="time-badge full">Housefull</span>
+                        <span class="time-badge" onclick="goBook()">9:00 PM</span>
+                    </div>
+                </div>
+            </div>
+            <div class="theatre-preview">
+                <div>
+                    <div class="tp-name">🎪 INOX Garuda Mall</div>
+                    <div class="tp-loc">📍 Magrath Road, Bengaluru</div>
+                </div>
+                <div>
+                    <div class="tp-stars">★★★★½</div>
+                    <div class="tp-times" style="margin-top:.4rem">
+                        <span class="time-badge" onclick="goBook()">11:00 AM</span>
+                        <span class="time-badge" onclick="goBook()">3:00 PM</span>
+                        <span class="time-badge" onclick="goBook()">7:00 PM</span>
+                        <span class="time-badge" onclick="goBook()">10:30 PM</span>
+                    </div>
+                </div>
+            </div>
+            <div class="theatre-preview">
+                <div>
+                    <div class="tp-name">🏛️ Cinepolis Forum</div>
+                    <div class="tp-loc">📍 Koramangala, Bengaluru</div>
+                </div>
+                <div>
+                    <div class="tp-stars">★★★★</div>
+                    <div class="tp-times" style="margin-top:.4rem">
+                        <span class="time-badge" onclick="goBook()">10:30 AM</span>
+                        <span class="time-badge full">Housefull</span>
+                        <span class="time-badge" onclick="goBook()">5:30 PM</span>
+                        <span class="time-badge" onclick="goBook()">9:00 PM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── MOVIES ── -->
+<section class="movies-section">
+<div class="sec" id="movies">
+    <div class="sec-head">
+        <div>
+            <div class="sec-label">In Cinemas Now</div>
+            <div class="sec-title">South Indian Blockbusters</div>
+        </div>
+        <a href="#" class="sec-all">All Movies →</a>
+    </div>
+    <div class="movie-grid">
+
+        {% for movie in admin_movies %}
+        <div class="movie-card" onclick='showMovie({{ movie.title|tojson }},{{ (movie.genre or "Cinema")|tojson }},{{ (movie.duration or "Duration TBA")|tojson }},{{ (movie.cast or "Cast TBA")|tojson }},{{ (movie.director or "Director TBA")|tojson }},{{ (movie.rating or "9.0")|tojson }},{{ (movie.description or "Freshly added from the admin dashboard.")|tojson }},{{ (movie.language or "Language")|tojson }},{{ (movie.format_type or "2D")|tojson }},"🎞","linear-gradient(160deg,#0b0710,#321018,#5c1b1b)")'>
+            <div class="mc-top-badges"><span class="mc-lang">{{ movie.language or 'New' }}</span><span class="mc-format">{{ movie.format_type or '2D' }}</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#0b0710,#321018,#5c1b1b)">
+                {% if movie.poster %}
+                <img src="{{ url_for('static', filename=movie.poster) }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+                {% endif %}
+                {% if not movie.poster %}<span class="poster-emoji">🎞</span>{% endif %}<div class="poster-overlay"></div>
+            </div>
+            <div class="movie-info">
+                <h3>{{ movie.title }}</h3>
+                <p>{{ movie.cast or movie.genre or 'Admin movie' }}</p>
+                <div class="mc-bottom"><span class="mc-rating">★ {{ movie.rating or '9.0' }}</span><span class="mc-price">from ₹220</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- KANTARA -->
+        <div class="movie-card" onclick="showMovie('Kantara','Action / Thriller','150 mins','Rishab Shetty, Sapthami Gowda','Rishab Shetty','9.4','A mystical action thriller rooted in Karnataka folklore and divine spirit.','Kannada','IMAX','🪘','linear-gradient(160deg,#050a00,#153a00,#204500)')">
+            <div class="mc-top-badges"><span class="mc-lang">Kannada</span><span class="mc-format">IMAX</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#050a00,#153a00,#204500)">
+            <img src="{{ url_for('static', filename='images/kantara.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>Kantara</h3>
+                <p>Rishab Shetty • Thriller</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 9.4</span><span class="mc-price">from ₹300</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- KGF -->
+        <div class="movie-card" onclick="showMovie('KGF Chapter 1','Action / Drama','155 mins','Yash, Srinidhi Shetty','Prashanth Neel','9.5','Rocky rises from poverty to become the king of Kolar Gold Fields.','Kannada','4K','⛏️','linear-gradient(160deg,#1a0800,#4a1800,#6a2500)')">
+            <div class="mc-top-badges"><span class="mc-lang">Kannada</span><span class="mc-format">4K</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#1a0800,#4a1800,#6a2500)">
+            <img src="{{ url_for('static', filename='images/kgf.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>KGF Chapter 1</h3>
+                <p>Yash • Action / Drama</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 9.5</span><span class="mc-price">from ₹300</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- CHAKRAVARTHY -->
+        <div class="movie-card" onclick="showMovie('Chakravarthy','Action / Drama','145 mins','Darshan, Deepa Sannidhi','Chintan','8.8','A powerful underworld action entertainer starring Challenging Star Darshan.','Kannada','2D','👑','linear-gradient(160deg,#0a0500,#2a1000,#401800)')">
+            <div class="mc-top-badges"><span class="mc-lang">Kannada</span><span class="mc-format">2D</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#0a0500,#2a1000,#401800)">
+            <img src="{{ url_for('static', filename='images/D boss.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>Chakravarthy</h3>
+                <p>Darshan • Action</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 8.8</span><span class="mc-price">from ₹350</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- JAMES -->
+        <div class="movie-card" onclick="showMovie('James','Action / Thriller','149 mins','Puneeth Rajkumar, Priya Anand','Chethan Kumar','9.1','Power-packed action film — a tribute to Power Star Puneeth Rajkumar.','Kannada','2D','⚡','linear-gradient(160deg,#000510,#001540,#002060)')">
+            <div class="mc-top-badges"><span class="mc-lang">Kannada</span><span class="mc-format">2D</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#000510,#001540,#002060)">
+            <img src="{{ url_for('static', filename='images/james.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>James</h3>
+                <p>Puneeth Rajkumar • Action</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 9.1</span><span class="mc-price">from ₹300</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- VIKRANT RONA -->
+        <div class="movie-card" onclick="showMovie('Vikrant Rona','Fantasy / Thriller','147 mins','Sudeep, Nirup Bhandari','Anup Bhandari','8.9','Mystery fantasy thriller starring Kichcha Sudeep in a stunning forest world.','Kannada','3D','🌲','linear-gradient(160deg,#000a05,#002010,#003018)')">
+            <div class="mc-top-badges"><span class="mc-lang">Kannada</span><span class="mc-format">3D</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#000a05,#002010,#003018)">
+            <img src="{{ url_for('static', filename='images/vikrant rona.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>Vikrant Rona</h3>
+                <p>Sudeep • Fantasy</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 8.9</span><span class="mc-price">from ₹250</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- PUSHPA -->
+        <div class="movie-card" onclick="showMovie('Pushpa','Action / Crime','179 mins','Allu Arjun, Rashmika Mandanna','Sukumar','9.2','Red sandalwood smuggler rises to power in the forests of Andhra Pradesh.','Telugu','4K','🌿','linear-gradient(160deg,#0a0500,#2a1500,#3a2000)')">
+            <div class="mc-top-badges"><span class="mc-lang">Telugu</span><span class="mc-format">4K</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#0a0500,#2a1500,#3a2000)">
+            <img src="{{ url_for('static', filename='images/pushpa.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>Pushpa</h3>
+                <p>Allu Arjun • Action</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 9.2</span><span class="mc-price">from ₹200</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- RRR -->
+        <div class="movie-card" onclick="showMovie('RRR','Action / Historical','182 mins','Ram Charan, Jr. NTR','S. S. Rajamouli','9.6','Epic pre-independence fictional story of two freedom fighters — a global phenomenon.','Telugu','IMAX','🔥','linear-gradient(160deg,#0a0000,#2a0000,#1a0a00)')">
+            <div class="mc-top-badges"><span class="mc-lang">Telugu</span><span class="mc-format">IMAX</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#0a0000,#2a0000,#1a0a00)">
+            <img src="{{ url_for('static', filename='images/rrr.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>RRR</h3>
+                <p>Ram Charan · Jr. NTR</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 9.6</span><span class="mc-price">from ₹250</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- JAILER -->
+        <div class="movie-card" onclick="showMovie('Jailer','Action / Drama','168 mins','Rajinikanth, Vinayakan','Nelson','9.0','Mass entertainer where Rajinikanth plays a retired jailer on a mission.','Tamil','2D','🦅','linear-gradient(160deg,#080005,#200015,#2a0020)')">
+            <div class="mc-top-badges"><span class="mc-lang">Tamil</span><span class="mc-format">2D</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#080005,#200015,#2a0020)">
+            <img src="{{ url_for('static', filename='images/jailer.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>Jailer</h3>
+                <p>Rajinikanth • Action</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 9.0</span><span class="mc-price">from ₹180</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+        <!-- LEO -->
+        <div class="movie-card" onclick="showMovie('Leo','Action / Thriller','164 mins','Vijay, Trisha','Lokesh Kanagaraj','9.3','A café owner with a mysterious violent past faces his destiny in this stylish thriller.','Tamil','4DX','🦁','linear-gradient(160deg,#080005,#1a0020,#250035)')">
+            <div class="mc-top-badges"><span class="mc-lang">Tamil</span><span class="mc-format">4DX</span></div>
+            <div class="poster-fallback" style="background:linear-gradient(160deg,#080005,#1a0020,#250035)">
+            <img src="{{ url_for('static', filename='images/leo.jpg') }}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+            <span class="poster-emoji"></span><div class="poster-overlay"></div></div>
+            <div class="movie-info">
+                <h3>Leo</h3>
+                <p>Vijay • Thriller</p>
+                <div class="mc-bottom"><span class="mc-rating">★ 9.3</span><span class="mc-price">from ₹220</span></div>
+                <button class="mc-book-btn" onclick="event.stopPropagation();goBook()">Book Now</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+</section>
+
+<!-- ── MOVIE POPUP ── -->
+<div class="movie-popup" id="moviePopup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closePopup()">✕</span>
+        <div id="popupPosterWrap"></div>
+        <div class="popup-body">
+            <h2 id="popupTitle"></h2>
+            <div class="popup-grid">
+                <div class="popup-field"><strong>Genre</strong><span id="popupGenre"></span></div>
+                <div class="popup-field"><strong>Duration</strong><span id="popupDuration"></span></div>
+                <div class="popup-field"><strong>Language</strong><span id="popupLang"></span></div>
+                <div class="popup-field"><strong>Format</strong><span id="popupFormat"></span></div>
+                <div class="popup-field" style="grid-column:1/-1"><strong>Cast</strong><span id="popupCast"></span></div>
+                <div class="popup-field"><strong>Director</strong><span id="popupDirector"></span></div>
+            </div>
+            <div class="popup-rating-row">⭐ <strong id="popupRating"></strong>/10</div>
+            <div class="popup-desc" id="popupDescription"></div>
+            <div class="popup-actions">
+                <button class="popup-book-btn" onclick="scrollToBooking()">🎟 Book Ticket</button>
+                <button class="popup-close-btn" onclick="openTrailer()">Watch Trailer</button>
+                <button class="popup-close-btn" onclick="closePopup()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TRAILER POPUP -->
+<div class="booking-modal" id="trailerPopup">
+    <div class="trailer-box">
+        <div class="trailer-head">
+            <div class="trailer-title" id="trailerTitle">Official Trailer</div>
+            <button class="modal-x" onclick="closeTrailer()" type="button">X</button>
+        </div>
+        <div class="trailer-frame">
+            <iframe id="trailerFrame" title="Movie trailer" allowfullscreen></iframe>
+        </div>
+        <div class="trailer-note">Trailer opens inside the page so users can preview the movie and continue booking quickly.</div>
+    </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── THEATRES ── -->
+<section class="sec" id="theatres">
+    <div class="sec-head">
+        <div>
+            <div class="sec-label">Bengaluru Cinemas</div>
+            <div class="sec-title">Pick Your Theatre</div>
+        </div>
+    </div>
+    <div class="theatres-grid">
+        <div class="theatre-card">
+            <div class="tc-head">
+                <div class="tc-icon">🎭</div>
+                <div class="tc-name">PVR Orion Mall</div>
+                <div class="tc-loc">📍 Rajajinagar, Bengaluru</div>
+                <div class="tc-stars">★★★★★</div>
+            </div>
+            <div class="tc-amenities">
+                <span class="amenity">Dolby Atmos</span><span class="amenity">4K</span>
+                <span class="amenity">Recliners</span><span class="amenity">Food Court</span>
+            </div>
+            <div class="tc-shows">
+                <div class="show-row">
+                    <span class="show-label">Kantara</span>
+                    <button class="slot" onclick="goBook()">10:00 AM</button>
+                    <button class="slot" onclick="goBook()">2:00 PM</button>
+                    <button class="slot full">Housefull</button>
+                    <button class="slot" onclick="goBook()">9:00 PM</button>
+                </div>
+                <div class="show-row">
+                    <span class="show-label">KGF</span>
+                    <button class="slot" onclick="goBook()">11:30 AM</button>
+                    <button class="slot" onclick="goBook()">3:30 PM</button>
+                    <button class="slot" onclick="goBook()">7:30 PM</button>
+                </div>
+                <div class="show-row">
+                    <span class="show-label">RRR</span>
+                    <button class="slot full">Housefull</button>
+                    <button class="slot" onclick="goBook()">4:00 PM</button>
+                    <button class="slot" onclick="goBook()">8:30 PM</button>
+                </div>
+            </div>
+        </div>
+        <div class="theatre-card">
+            <div class="tc-head">
+                <div class="tc-icon">🎪</div>
+                <div class="tc-name">INOX Garuda Mall</div>
+                <div class="tc-loc">📍 Magrath Road, Bengaluru</div>
+                <div class="tc-stars">★★★★½</div>
+            </div>
+            <div class="tc-amenities">
+                <span class="amenity">IMAX</span><span class="amenity">3D</span>
+                <span class="amenity">Premium</span><span class="amenity">Bar</span>
+            </div>
+            <div class="tc-shows">
+                <div class="show-row">
+                    <span class="show-label">Pushpa</span>
+                    <button class="slot" onclick="goBook()">10:00 AM</button>
+                    <button class="slot" onclick="goBook()">1:30 PM</button>
+                    <button class="slot" onclick="goBook()">5:30 PM</button>
+                    <button class="slot" onclick="goBook()">9:30 PM</button>
+                </div>
+                <div class="show-row">
+                    <span class="show-label">Jailer</span>
+                    <button class="slot" onclick="goBook()">11:00 AM</button>
+                    <button class="slot full">Housefull</button>
+                    <button class="slot" onclick="goBook()">7:00 PM</button>
+                </div>
+                <div class="show-row">
+                    <span class="show-label">Leo</span>
+                    <button class="slot" onclick="goBook()">12:00 PM</button>
+                    <button class="slot" onclick="goBook()">4:30 PM</button>
+                    <button class="slot" onclick="goBook()">10:00 PM</button>
+                </div>
+            </div>
+        </div>
+        <div class="theatre-card">
+            <div class="tc-head">
+                <div class="tc-icon">🏛️</div>
+                <div class="tc-name">Cinepolis Forum Mall</div>
+                <div class="tc-loc">📍 Koramangala, Bengaluru</div>
+                <div class="tc-stars">★★★★</div>
+            </div>
+            <div class="tc-amenities">
+                <span class="amenity">4DX</span><span class="amenity">3D</span>
+                <span class="amenity">Standard</span><span class="amenity">Snacks</span>
+            </div>
+            <div class="tc-shows">
+                <div class="show-row">
+                    <span class="show-label">James</span>
+                    <button class="slot" onclick="goBook()">10:30 AM</button>
+                    <button class="slot" onclick="goBook()">2:30 PM</button>
+                    <button class="slot" onclick="goBook()">6:30 PM</button>
+                </div>
+                <div class="show-row">
+                    <span class="show-label">Vikrant</span>
+                    <button class="slot" onclick="goBook()">11:00 AM</button>
+                    <button class="slot" onclick="goBook()">3:00 PM</button>
+                    <button class="slot full">Housefull</button>
+                </div>
+                <div class="show-row">
+                    <span class="show-label">Chakravarthy</span>
+                    <button class="slot" onclick="goBook()">10:00 AM</button>
+                    <button class="slot" onclick="goBook()">5:00 PM</button>
+                    <button class="slot" onclick="goBook()">9:00 PM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── SCHEDULE ── -->
+<section class="sec" id="schedule">
+    <div class="sec-head">
+        <div>
+            <div class="sec-label">Today's Screenings</div>
+            <div class="sec-title">Show Timings</div>
+        </div>
+    </div>
+    <div class="schedule-wrap">
+        <div class="sch-tabs">
+            <button class="sch-tab active" onclick="filterSch('all',this)">All Shows</button>
+            <button class="sch-tab" onclick="filterSch('Kannada',this)">ಕನ್ನಡ Kannada</button>
+            <button class="sch-tab" onclick="filterSch('Telugu',this)">Telugu</button>
+            <button class="sch-tab" onclick="filterSch('Tamil',this)">Tamil</button>
+        </div>
+        <table class="sch-table">
+            <thead>
+                <tr>
+                    <th>Movie</th>
+                    <th>Theatre</th>
+                    <th>Time</th>
+                    <th>Language</th>
+                    <th>Format</th>
+                    <th>Price</th>
+                    <th>Seats</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="schBody"></tbody>
+        </table>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── BOOKING ── -->
+<section class="booking-section" id="booking">
+<div class="booking-container">
+    <!-- Form -->
+    <div class="booking-left">
+        <h2>Book Your Ticket</h2>
+        <div class="bl-sub">Fill in your details to reserve your seat at the cinema.</div>
+        <form action="/book" method="POST" id="bookForm" onsubmit="handleBook(event)">
+            <input type="hidden" name="seat_number" id="seatNumberHidden" value="">
+            <input type="hidden" name="movie_name" id="movieNameHidden" value="">
+            <input type="hidden" name="total_amount" id="totalAmountHidden" value="">
+            <input type="hidden" name="payment_method" id="paymentMethodHidden" value="UPI">
+            <div class="field-row">
+                <div class="field-group">
+                    <label class="field-label">Full Name</label>
+                    <input type="text" name="name" placeholder="Name" required/>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Phone</label>
+                    <input type="tel" name="phone" placeholder="9876543210" pattern="[0-9]{10}" maxlength="10" required/>
+                </div>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Email Address</label>
+                <input type="email" name="email" placeholder="name@email.com" required/>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Select Movie</label>
+                <select name="movie_id" id="movieSelect" required>
+                    <option value="">— Choose a Movie —</option>
+                    {% for movie in movies %}
+                    <option value="{{ movie[0] }}">{{ movie[1] }}</option>
+                    {% endfor %}
+                    {% for movie in admin_movies %}
+                    <option value="{{ movie.id }}">{{ movie.title }}</option>
+                    {% endfor %}
+                    <!-- Fallback static options if Flask not running -->
+                    <option value="1">Kantara (Kannada)</option>
+                    <option value="2">KGF Chapter 1 (Kannada)</option>
+                    <option value="3">Chakravarthy (Kannada)</option>
+                    <option value="4">James (Kannada)</option>
+                    <option value="5">Vikrant Rona (Kannada)</option>
+                    <option value="6">Pushpa (Telugu)</option>
+                    <option value="7">RRR (Telugu)</option>
+                    <option value="8">Jailer (Tamil)</option>
+                    <option value="9">Leo (Tamil)</option>
+                </select>
+            </div>
+            <div class="field-row">
+                <div class="field-group">
+                    <label class="field-label">Theatre</label>
+                    <select name="theatre" id="theatreSelect">
+                        <option value="1">PVR Orion — Rajajinagar</option>
+                        <option value="2">INOX Garuda — Magrath Rd</option>
+                        <option value="3">Cinepolis Forum — Koramangala</option>
+                        <option value="4">PVR VR Bengaluru — Whitefield</option>
+                        <option value="5">IMAX Science City — Domlur</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Show Date</label>
+                    <input type="date" name="show_date" id="showDate" required/>
+                </div>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Show Time</label>
+                <select name="show_time" id="showTimeSelect">
+                    <option value="10:00">🌅 10:00 AM — Morning Show</option>
+                    <option value="13:30">☀️ 1:30 PM — Matinee</option>
+                    <option value="17:00">🌆 5:00 PM — Evening Show</option>
+                    <option value="20:30">🌙 8:30 PM — Night Show</option>
+                    <option value="23:30">🌟 11:30 PM — Late Night</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Selected Seat</label>
+                <select id="seatSelectField">
+                    <option value="">— Select from seat map or choose here —</option>
+                    <option value="A1">A1 — Standard</option>
+                    <option value="A2">A2 — Standard</option>
+                    <option value="A4">A4 — Standard</option>
+                    <option value="B1">B1 — Standard</option>
+                    <option value="B3">B3 — Standard</option>
+                    <option value="D2">D2 — Premium</option>
+                    <option value="E1">E1 — Premium</option>
+                    <option value="F1">F1 — Premium</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn">Continue to Payment</button>
+        </form>
+    </div>
+
+    <!-- Seat Picker -->
+    <div class="seat-picker-panel">
+        <div class="sp-title">Select Your Seat</div>
+        <div class="sp-sub">Tap a seat to select · Gold border = Premium · Grey = Taken</div>
+        <div class="screen-wrap">
+            <div class="screen-bar"></div>
+            <div class="screen-text">Screen This Side</div>
+        </div>
+        <div class="seat-grid-wrap" id="seatGrid"></div>
+        <div class="legend-wrap">
+            <div class="leg-item"><div class="leg-box lb-std"></div> Standard ₹150</div>
+            <div class="leg-item"><div class="leg-box lb-sel"></div> Selected</div>
+            <div class="leg-item"><div class="leg-box lb-prem"></div> Premium ₹300</div>
+            <div class="leg-item"><div class="leg-box lb-taken"></div> Taken</div>
+        </div>
+        <div class="seat-summary">
+            <div>
+                <div class="ss-label">Selected Seats</div>
+                <div class="ss-seats" id="seatDisplay">None selected</div>
+            </div>
+            <div class="ss-price" id="priceDisplay">₹0</div>
+        </div>
+    </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── FOOTER ── -->
+<footer>
+    <div class="foot-brand">
+        <div style="font-size:1.5rem;color:var(--gold);margin-bottom:.3rem">ನಮ್ಮ ಸಿನೆಮಾ</div>
+        <div class="nav-logo-text">NAMMA CINEMA</div>
+        <div class="foot-desc">South India's own movie booking platform — Bengaluru's best theatres, instant bookings.</div>
+    </div>
+    <div class="foot-col">
+        <h4>Languages</h4>
+        <a href="#">ಕನ್ನಡ Kannada</a>
+        <a href="#">Telugu</a>
+        <a href="#">Tamil</a>
+        <a href="#">Malayalam</a>
+    </div>
+    <div class="foot-col">
+        <h4>Theatres</h4>
+        <a href="#">PVR Orion Mall</a>
+        <a href="#">INOX Garuda Mall</a>
+        <a href="#">Cinepolis Forum</a>
+        <a href="#">IMAX Science City</a>
+    </div>
+    <div class="foot-col">
+        <h4>Help</h4>
+        <a href="#">FAQ</a>
+        <a href="#">Cancellation Policy</a>
+        <a href="#">Contact Us</a>
+        <a href="#">Privacy Policy</a>
+    </div>
+</footer>
+<div class="foot-bottom">
+    <div class="fb-text">© 2024 Namma Cinema  · RNS Institute of Technology · DBMS · CS 4th Year</div>
+    <div class="fb-text" style="color:var(--gold)">ನಮ್ಮ ಭಾಷೆ · ನಮ್ಮ ಸಿನೆಮಾ · ನಮ್ಮ ಚಲನಚಿತ್ರ</div>
+</div>
+
+<!-- ── SUCCESS MODAL ── -->
+<div id="successModal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.9);backdrop-filter:blur(10px);align-items:center;justify-content:center;">
+    <div class="success-box">
+        <div class="success-top">
+            <div class="success-icon">🎉</div>
+            <div class="success-title">Booking Confirmed!</div>
+            <div class="success-sub">Your seats are reserved. Show this confirmation at the counter.</div>
+        </div>
+        <div class="success-body">
+            <div id="confirmRows"></div>
+            <button class="done-btn" onclick="closeSuccess()">✓ Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- PAYMENT SCREEN -->
+<div class="booking-modal" id="paymentModal">
+    <div class="payment-box">
+        <div class="payment-head">
+            <div class="payment-title">Complete Payment</div>
+            <button class="modal-x" type="button" onclick="closePayment()">X</button>
+        </div>
+        <div class="payment-body">
+            <div class="pay-summary" id="paymentRows"></div>
+            <div class="pay-methods">
+                <button class="pay-option active" type="button" onclick="selectPayment(this, 'UPI')">UPI</button>
+                <button class="pay-option" type="button" onclick="selectPayment(this, 'Card')">Card</button>
+                <button class="pay-option" type="button" onclick="selectPayment(this, 'Net Banking')">Net Banking</button>
+            </div>
+            <div class="pay-fields">
+                <input class="wide" type="text" placeholder="UPI ID / Card holder / Bank name" required>
+                <input type="text" placeholder="Payment ID" value="PAY-DEMO-001">
+                <input type="text" placeholder="Coupon code">
+            </div>
+            <div class="modal-actions">
+                <button class="popup-close-btn" type="button" onclick="closePayment()">Back</button>
+                <button class="popup-book-btn" type="button" onclick="confirmPayment()">Pay & Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const IS_LOGGED_IN = {{ is_logged_in|tojson }};
+const LOGIN_FOR_BOOKING_URL = "{{ url_for('login', next='booking') }}";
+
+function requireLoginForBooking() {
+    if(!IS_LOGGED_IN) {
+        window.location.href = LOGIN_FOR_BOOKING_URL;
+        return false;
+    }
+
+    return true;
+}
+
+// ── SCHEDULE DATA ──
+const SCHEDULE = [
+    {movie:'Kantara',       theatre:'PVR Orion Mall',     time:'10:00 AM', lang:'Kannada', fmt:'IMAX',    price:'₹300', avail:'Available'},
+    {movie:'KGF Chapter 1', theatre:'PVR Orion Mall',     time:'3:30 PM',  lang:'Kannada', fmt:'4K',      price:'₹250', avail:'Few Left'},
+    {movie:'RRR',           theatre:'PVR Orion Mall',     time:'8:30 PM',  lang:'Telugu',  fmt:'IMAX',    price:'₹350', avail:'Available'},
+    {movie:'Pushpa',        theatre:'INOX Garuda Mall',   time:'10:00 AM', lang:'Telugu',  fmt:'4K',      price:'₹280', avail:'Available'},
+    {movie:'Jailer',        theatre:'INOX Garuda Mall',   time:'2:30 PM',  lang:'Tamil',   fmt:'2D',      price:'₹200', avail:'Few Left'},
+    {movie:'Leo',           theatre:'INOX Garuda Mall',   time:'7:00 PM',  lang:'Tamil',   fmt:'4DX',     price:'₹320', avail:'Available'},
+    {movie:'James',         theatre:'Cinepolis Forum',    time:'10:30 AM', lang:'Kannada', fmt:'2D',      price:'₹150', avail:'Available'},
+    {movie:'Vikrant Rona',  theatre:'Cinepolis Forum',    time:'3:00 PM',  lang:'Kannada', fmt:'3D',      price:'₹180', avail:'Housefull'},
+    {movie:'Chakravarthy',  theatre:'Cinepolis Forum',    time:'7:30 PM',  lang:'Kannada', fmt:'2D',      price:'₹140', avail:'Available'},
+    {movie:'Kantara',       theatre:'IMAX Science City',  time:'6:00 PM',  lang:'Kannada', fmt:'IMAX',    price:'₹320', avail:'Few Left'},
+    {movie:'Pushpa',        theatre:'PVR VR Bengaluru',   time:'8:30 PM',  lang:'Telugu',  fmt:'Dolby 4K',price:'₹380', avail:'Available'},
+];
+
+let currentMovieTitle = 'Kantara';
+let activeLang = 'all';
+function filterSch(lang, btn) {
+    activeLang = lang;
+    document.querySelectorAll('.sch-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    renderSch();
+}
+function renderSch() {
+    const rows = activeLang === 'all' ? SCHEDULE : SCHEDULE.filter(r=>r.lang===activeLang);
+    const body = document.getElementById('schBody');
+    body.innerHTML = rows.map(r => {
+        const ac = r.avail === 'Available' ? 'avail-ok' : r.avail === 'Housefull' ? 'avail-no' : 'avail-few';
+        const canBook = r.avail !== 'Housefull';
+        return `<tr>
+            <td><div class="t-movie">${r.movie}</div><div class="t-theatre">${r.theatre}</div></td>
+            <td>${r.theatre}</td>
+            <td><span class="b-time">${r.time}</span></td>
+            <td><span class="b-lang">${r.lang}</span></td>
+            <td style="font-size:.78rem;color:var(--muted)">${r.fmt}</td>
+            <td style="font-weight:700;color:var(--gold)">${r.price}</td>
+            <td><span class="${ac}">${r.avail}</span></td>
+            <td>${canBook?`<button class="sch-book-btn" onclick="goBook()">Book →</button>`:'—'}</td>
+        </tr>`;
+    }).join('');
+}
+renderSch();
+
+// ── SEAT GRID ──
+const ROWS = ['A','B','C','D','E','F','G','H'];
+const COLS = 9;
+const TAKEN = ['A3','A7','B2','B6','C4','D1','D5','E3','E8','F2','F6','G4','H1','H7'];
+const PREMIUM_ROWS = ['D','E','F'];
+let chosen = [];
+
+const sg = document.getElementById('seatGrid');
+ROWS.forEach(row => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'seat-row-wrap';
+    rowEl.innerHTML = `<div class="row-lbl">${row}</div>`;
+    for(let c=1;c<=COLS;c++){
+        if(c===5){ const g=document.createElement('div'); g.className='seat-aisle'; rowEl.appendChild(g); }
+        const id = row+c;
+        const el = document.createElement('div');
+        el.className = 'seat' + (TAKEN.includes(id)?' taken':'') + (PREMIUM_ROWS.includes(row)?' premium':'');
+        el.dataset.id = id;
+        el.dataset.price = PREMIUM_ROWS.includes(row) ? 300 : 150;
+        el.textContent = c;
+        if(!TAKEN.includes(id)) el.addEventListener('click',()=>toggleSeat(el));
+        rowEl.appendChild(el);
+    }
+    sg.appendChild(rowEl);
+});
+
+function toggleSeat(el) {
+    if(el.classList.contains('taken')) {
+        alert('This seat is already booked or blocked. Please choose another seat.');
+        return;
+    }
+
+    const id = el.dataset.id;
+    if(el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        chosen = chosen.filter(s=>s!==id);
+    } else {
+        if(chosen.length>=6){ alert('Max 6 seats per booking'); return; }
+        el.classList.add('selected');
+        chosen.push(id);
+        // sync dropdown
+        const sf = document.getElementById('seatSelectField');
+        sf.value = id;
+    }
+    updateBar();
+}
+
+function syncManualSeat() {
+    const sf = document.getElementById('seatSelectField');
+    chosen = sf.value ? [sf.value] : [];
+    sg.querySelectorAll('.seat').forEach(seat => {
+        seat.classList.toggle('selected', chosen.includes(seat.dataset.id));
+    });
+    updateBar();
+}
+
+function updateBar() {
+    const sd = document.getElementById('seatDisplay');
+    const pd = document.getElementById('priceDisplay');
+    const seatHidden = document.getElementById('seatNumberHidden');
+    const totalHidden = document.getElementById('totalAmountHidden');
+    if(!chosen.length){
+        sd.textContent='None selected';
+        pd.textContent='₹0';
+        seatHidden.value = '';
+        totalHidden.value = '';
+        return;
+    }
+    sd.textContent = chosen.join(', ');
+    let total=0;
+    chosen.forEach(id=>{
+        const el=sg.querySelector(`[data-id="${id}"]`);
+        total += el ? parseInt(el.dataset.price) : (['D','E','F'].includes(id[0]) ? 300 : 150);
+    });
+    pd.textContent='₹'+total;
+    seatHidden.value = chosen.join(', ');
+    totalHidden.value = total;
+}
+
+document.getElementById('seatSelectField').addEventListener('change', syncManualSeat);
+
+async function refreshSeatAvailability() {
+    const movieId = document.getElementById('movieSelect').value;
+    const theatre = document.getElementById('theatreSelect').value;
+    const showDate = document.getElementById('showDate').value;
+    const showTime = document.getElementById('showTimeSelect').value;
+
+    if(!movieId || !showDate || !showTime) {
+        return;
+    }
+
+    const params = new URLSearchParams({
+        movie_id: movieId,
+        theatre: theatre,
+        show_date: showDate,
+        show_time: showTime
+    });
+
+    try {
+        const response = await fetch('/api/seats?' + params.toString());
+        const data = await response.json();
+        const unavailable = new Set(data.unavailable || []);
+
+        sg.querySelectorAll('.seat').forEach(seat => {
+            const isUnavailable = unavailable.has(seat.dataset.id);
+            seat.classList.toggle('taken', isUnavailable || TAKEN.includes(seat.dataset.id));
+            seat.title = isUnavailable ? 'Already booked or blocked' : '';
+
+            if(isUnavailable && seat.classList.contains('selected')) {
+                seat.classList.remove('selected');
+                chosen = chosen.filter(id => id !== seat.dataset.id);
+            }
+        });
+
+        if(chosen.length) {
+            updateBar();
+        }
+    } catch(error) {
+        console.warn('Seat availability check failed', error);
+    }
+}
+
+['movieSelect', 'theatreSelect', 'showDate', 'showTimeSelect'].forEach(id => {
+    const field = document.getElementById(id);
+    if(field) {
+        field.addEventListener('change', refreshSeatAvailability);
+    }
+});
+
+setInterval(refreshSeatAvailability, 8000);
+
+// ── POPUP ──
+function showMovie(title,genre,duration,cast,director,rating,desc,lang,format,icon,bg) {
+    currentMovieTitle = title;
+    document.getElementById('popupTitle').textContent = title;
+    document.getElementById('popupGenre').textContent = genre;
+    document.getElementById('popupDuration').textContent = duration;
+    document.getElementById('popupCast').textContent = cast;
+    document.getElementById('popupDirector').textContent = director;
+    document.getElementById('popupRating').textContent = rating;
+    document.getElementById('popupDescription').textContent = desc;
+    document.getElementById('popupLang').textContent = lang;
+    document.getElementById('popupFormat').textContent = format;
+    document.getElementById('popupPosterWrap').innerHTML = `
+        <div class="popup-poster-fallback" style="background:${bg}">${icon}</div>`;
+    document.getElementById('moviePopup').style.display = 'flex';
+    // Select movie in form
+    const sel = document.getElementById('movieSelect');
+    for(let o of sel.options){ if(o.text.includes(title)){ sel.value=o.value; break; } }
+}
+function closePopup() { document.getElementById('moviePopup').style.display='none'; }
+function openTrailer() {
+    const query = encodeURIComponent(currentMovieTitle + ' official trailer');
+    document.getElementById('trailerTitle').textContent = currentMovieTitle + ' Trailer';
+    document.getElementById('trailerFrame').src = 'https://www.youtube.com/embed?listType=search&list=' + query;
+    document.getElementById('trailerPopup').style.display = 'flex';
+}
+function closeTrailer() {
+    document.getElementById('trailerPopup').style.display = 'none';
+    document.getElementById('trailerFrame').src = '';
+}
+function scrollToBooking() {
+    closePopup();
+    if(!requireLoginForBooking()) return;
+    document.getElementById('booking').scrollIntoView({behavior:'smooth'});
+}
+function goBook() {
+    if(!requireLoginForBooking()) return;
+    document.getElementById('booking').scrollIntoView({behavior:'smooth'});
+}
+
+// ── DATE DEFAULT ──
+const di = document.getElementById('showDate');
+const tom = new Date(); tom.setDate(tom.getDate()+1);
+di.value = tom.toISOString().split('T')[0];
+di.min = new Date().toISOString().split('T')[0];
+refreshSeatAvailability();
+
+// ── BOOKING SUBMIT ──
+function handleBook(e) {
+    e.preventDefault();
+    if(!requireLoginForBooking()) return;
+    const f = e.target;
+    const name  = f.name.value;
+    const email = f.email.value;
+    const movieSel = f.movie_id.options[f.movie_id.selectedIndex];
+    const movie = movieSel ? movieSel.text : '—';
+    const theatre = f.theatre.options[f.theatre.selectedIndex].text;
+    const date  = f.show_date.value;
+    const time  = f.show_time.options[f.show_time.selectedIndex].text.replace(/[🌅☀️🌆🌙🌟]/g,'').trim();
+    const manualSeat = document.getElementById('seatSelectField').value;
+    if(!chosen.length && manualSeat) {
+        chosen = [manualSeat];
+        updateBar();
+    }
+    if(!chosen.length) {
+        alert('Please select at least one seat before payment.');
+        return;
+    }
+    const seats = chosen.join(', ');
+    const totalNumber = document.getElementById('totalAmountHidden').value || '150';
+    const total = '₹' + totalNumber;
+
+    document.getElementById('seatNumberHidden').value = seats;
+    document.getElementById('movieNameHidden').value = movie;
+    document.getElementById('totalAmountHidden').value = totalNumber;
+
+    document.getElementById('paymentRows').innerHTML = `
+        <div class="pay-row"><span>Name</span><span>${name}</span></div>
+        <div class="pay-row"><span>Email</span><span>${email}</span></div>
+        <div class="pay-row"><span>Movie</span><span>${movie}</span></div>
+        <div class="pay-row"><span>Theatre</span><span>${theatre}</span></div>
+        <div class="pay-row"><span>Date & Time</span><span>${date} · ${time}</span></div>
+        <div class="pay-row"><span>Seats</span><span>${seats}</span></div>
+        <div class="pay-row"><span>Total Amount</span><span style="color:var(--gold)">${total}</span></div>
+    `;
+    document.getElementById('paymentModal').style.display = 'flex';
+}
+function closeSuccess() { document.getElementById('successModal').style.display='none'; }
+function closePayment() { document.getElementById('paymentModal').style.display='none'; }
+function selectPayment(btn, method) {
+    document.querySelectorAll('.pay-option').forEach(option => option.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('paymentMethodHidden').value = method;
+}
+function confirmPayment() {
+    document.getElementById('paymentModal').style.display = 'none';
+    document.getElementById('bookForm').submit();
+}
+document.getElementById('successModal').addEventListener('click',function(e){if(e.target===this)closeSuccess();});
+document.getElementById('moviePopup').addEventListener('click',function(e){if(e.target===this)closePopup();});
+document.getElementById('paymentModal').addEventListener('click',function(e){if(e.target===this)closePayment();});
+document.getElementById('trailerPopup').addEventListener('click',function(e){if(e.target===this)closeTrailer();});
+
+// ── CINEMA INTRO AND AMBIENT EFFECTS ──
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('loadingScreen').classList.add('hide');
+    }, 1200);
+});
+
+const heroSlides = document.querySelectorAll('.hero-slide');
+let heroSlideIndex = 0;
+setInterval(() => {
+    heroSlides[heroSlideIndex].classList.remove('active');
+    heroSlideIndex = (heroSlideIndex + 1) % heroSlides.length;
+    heroSlides[heroSlideIndex].classList.add('active');
+}, 4200);
+
+// ── GSAP ANIMATIONS ──
+if(window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('.movie-card, .theatre-card, .schedule-wrap, .booking-left, .seat-picker-panel').forEach((el) => {
+        gsap.from(el, {
+            opacity: 0,
+            y: 44,
+            duration: .75,
+            ease: 'power2.out',
+            scrollTrigger: {
+                trigger: el,
+                start: 'top 86%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+    });
+}
+
+if(window.gsap) {
+    gsap.from(".hero-badge", { y:-30, opacity:0, duration:1, delay:.2 });
+    gsap.from(".hero h1", { y:-60, opacity:0, duration:1.4, delay:.4 });
+    gsap.from(".hero p", { y:30, opacity:0, duration:1, delay:.7 });
+    gsap.from(".hero-btns", { y:20, opacity:0, duration:.8, delay:.9 });
+    gsap.from(".hero-langs", { y:20, opacity:0, duration:.8, delay:1.1 });
+    gsap.from(".theatre-preview", { opacity:0, x:40, duration:.7, stagger:.15, delay:.5 });
+}
+// Movie cards use CSS animation instead of GSAP ScrollTrigger
+// so they always show correctly
+</script>
+</body>
+</html>

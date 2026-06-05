@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>MovieTime</h1>
+        <p class="tagline">Login now and grab the best seats before the show starts.</p>
+
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/login_user">
+            <input type="hidden" name="next" value="{{ next_page or '' }}">
+            <input type="email" name="email" placeholder="Enter email" required>
+            <input type="password" name="password" placeholder="Enter password" required>
+            <button type="submit">Login & Book Tickets</button>
+        </form>
+
+        <p>Don't have account? <a href="/signup">Signup</a></p>
+    </div>
+</body>
+</html>
